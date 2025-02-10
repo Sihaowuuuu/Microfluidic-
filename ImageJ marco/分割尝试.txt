@@ -1,0 +1,57 @@
+makeRectangle(655, 720, 47736, 414);
+run("Crop");
+
+
+//需要修改的参数：
+setWidth=getWidth()/1024; //设定小图宽度像素数
+setHeight=getHeight(); //设定小图高度像素数
+overlap=0; //设定小图之间重叠的像素数
+fmat="Tiff"; //设定小图的格式，一般与原图格式相同即可
+path="C:/Users/吴/Desktop/写论文/Sihao/Raw Image/cropt try seed 1/"; //设定小图的存储目录，注意最后一个斜杠不能省略
+ 
+//以下代码无需修改
+ID=getTitle();
+picWidth=getWidth(); //获取图像高度像素数
+picHeight=getHeight();  //获取图像宽度像素数
+X=0;
+Y=0;
+ 
+for(X=0; X+setWidth<picWidth; X=X+setWidth-overlap)
+{
+  for(Y=0; Y+setHeight<picHeight; Y=Y+setHeight-overlap)
+  {
+    selectWindow(ID);
+    makeRectangle(X,Y,setWidth,setHeight);
+    run("Duplicate...", "duplicate");
+    saveAs(fmat, path+Y+","+X+","+ID);
+    close();
+   }
+}
+ 
+X=picWidth-setWidth; //截取最后一行小图
+for(Y=0; Y+setHeight<picHeight; Y=Y+setHeight-overlap)
+{
+    selectWindow(ID);
+    makeRectangle(X,Y,setWidth,setHeight);
+    run("Duplicate...", "duplicate");
+    saveAs(fmat, path+Y+","+X+","+ID);
+    close();
+}
+ 
+Y=picHeight-setHeight; //截取最后一列小图
+for(X=0; X+setWidth<picWidth; X=X+setWidth-overlap)
+{
+    selectWindow(ID);
+    makeRectangle(X,Y,setWidth,setHeight);
+    run("Duplicate...", "duplicate");
+    saveAs(fmat, path+Y+","+X+","+ID);
+    close();
+}
+ 
+X=picWidth-setWidth;
+Y=picHeight-setHeight; //截取最后一行最后一列小图
+selectWindow(ID);
+makeRectangle(X,Y,setWidth,setHeight);
+run("Duplicate...", "duplicate");
+saveAs(fmat, path+Y+","+X+","+ID);
+    close();
