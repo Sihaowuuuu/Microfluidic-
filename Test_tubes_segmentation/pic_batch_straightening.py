@@ -4,7 +4,6 @@ import math
 from PIL import Image
 import os
 import matplotlib.pyplot as plt
-from openpyxl.styles.builtins import output
 
 
 def rotate_portrait_to_landscape(image):

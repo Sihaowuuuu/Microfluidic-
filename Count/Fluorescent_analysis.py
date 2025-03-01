@@ -333,13 +333,13 @@ def plot_intensity_over_time_by_ratio(df, excel_path):
             ch01_data = df[(df["Tube"] == tube) & (df["Channel"] == "ch01")]
             ch02_data = df[(df["Tube"] == tube) & (df["Channel"] == "ch02")]
 
-            # 确保有数据
+            # Ensure availability of data
             if not ch01_data.empty and not ch02_data.empty:
-                # 排序数据
+                # Sorted data
                 ch01_data = ch01_data.sort_values("Time")
                 ch02_data = ch02_data.sort_values("Time")
 
-                # 绘制强度随时间变化的曲线
+                # Plotting intensity over time
                 plt.plot(ch01_data["Time"], ch01_data["Intensity"], marker="o", label=f"Tube {tube} - ch01")
                 plt.plot(ch02_data["Time"], ch02_data["Intensity"], marker="x", label=f"Tube {tube} - ch02")
 
@@ -348,31 +348,31 @@ def plot_intensity_over_time_by_ratio(df, excel_path):
         plt.legend()
         plt.grid(True)
 
-        # 将综合图像保存到内存
+        # Save composite image to memory
         img_stream = BytesIO()
         plt.savefig(img_stream, format="png")
-        img_stream.seek(0)  # 重置流的位置
+        img_stream.seek(0)  # Reset the position of the stream
         img = Image(img_stream)
 
-        # 将综合图像插入到比值 sheet 中
+        # Insert the composite image into the ratio sheet
         sheet.add_image(img, "A1")
 
-        plt.close()  # 关闭综合图形
+        plt.close()  # Close Integrated Graphics
 
-        # 为每个 tube 生成单独的图像并插入到相应的比值 sheet 中
-        current_row = 20  # 从 A20 单元格开始插入 tube 图像
+        # Generate a separate image for each tube and insert it into the corresponding ratio sheet
+        current_row = 20  # Insert tube image starting in cell A20
         for tube in tubes:
             tube_sheet_title = f"Tube {tube} - Intensity"
-            plt.figure()  # 创建新的图形
+            plt.figure()  # Creating a new graphic
             plt.title(f"Intensity Over Time for Tube {tube}")
 
-            # 获取该 tube 在 ch01 和 ch02 的数据
+            # Get the tube's data at ch01 and ch02.
             ch01_data = df[(df["Tube"] == tube) & (df["Channel"] == "ch01")]
             ch02_data = df[(df["Tube"] == tube) & (df["Channel"] == "ch02")]
 
-            # 绘制强度随时间变化的曲线
+            # Plotting intensity over time
             if not ch01_data.empty and not ch02_data.empty:
-                # 排序数据
+                # Sorted data
                 ch01_data = ch01_data.sort_values("Time")
                 ch02_data = ch02_data.sort_values("Time")
 
@@ -384,22 +384,22 @@ def plot_intensity_over_time_by_ratio(df, excel_path):
             plt.legend()
             plt.grid(True)
 
-            # 将单独的 tube 图像保存到内存
+            # Save individual tube images to memory
             img_stream_tube = BytesIO()
             plt.savefig(img_stream_tube, format="png")
-            img_stream_tube.seek(0)  # 重置流的位置
+            img_stream_tube.seek(0)  # Reset the position of the stream
             img_tube = Image(img_stream_tube)
 
-            # 将 tube 图像插入到比值 sheet 中（从 A20 开始）
+            # Insert tube image into ratio sheet (starting with A20)
             sheet.add_image(img_tube, f"A{current_row}")
-            current_row += 20  # 每个 tube 图像间隔 20 行
+            current_row += 20  # Each tube image is spaced 20 lines apart
 
-            plt.close()  # 关闭 tube 的图形
-    # 保存 Excel 文件
+            plt.close()  # Turning off the tube's graphics
+    # Save Excel file
     excel_path = os.path.join(excel_path, "fluorescent_analysis_results_intensity_graph.xlsx")
     excel_dir = os.path.dirname(excel_path)
 
-    # 如果目录不存在，创建目录
+    # If the directory does not exist, create the directory
     if not os.path.exists(excel_dir):
         os.makedirs(excel_dir)
     wb.save(excel_path)
@@ -408,42 +408,42 @@ def plot_intensity_over_time_by_ratio(df, excel_path):
 
 def plot_normalized_intensity_over_time_by_ratio(df, excel_path):
     """
-    根据比值将试管分组，并绘制每个比值下不同通道的归一化强度随时间变化的图。
-    将每个比值的图像插入到 Excel 的不同 sheet 中，同时为每个 Tube 生成单独的归一化强度图像，并将其插入到相应的比值 sheet 中。
+     Group the tubes according to the ratio and plot the normalized intensity over time for the different channels at each ratio.
+    Insert the image for each ratio into a different sheet in Excel, while generating a separate normalized intensity image for each Tube and inserting it into the corresponding ratio sheet.
     """
-    # 使用之前的 group_tubes_by_specific_ratio 函数进行分组
+    # Grouping using the previous group_tubes_by_specific_ratio function
     ratio_groups = group_tubes_by_specific_ratio(df)
 
-    # 创建 Excel 文件
+    # Creating Excel Files
     wb = Workbook()
 
-    # 遍历每个比值
+    # Iterate over each ratio
     for ratio, tubes in ratio_groups.items():
         sheet_name = f"Ratio_{ratio[0]}_{ratio[1]}"
         sheet = wb.create_sheet(title=sheet_name)
-        plt.figure()  # 创建新的图形
+        plt.figure()  # Creating a new graphic
         plt.title(f"Normalized Intensity Over Time for Ratio {ratio[0]}:{ratio[1]}")
 
-        # 遍历每个试管并绘制综合图
+        # Iterate through each test tube and plot a composite graph
         for tube in tubes:
-            # 获取该试管在 ch01 和 ch02 的数据
+            # Get the data for this tube at ch01 and ch02.
             ch01_data = df[(df["Tube"] == tube) & (df["Channel"] == "ch01")]
             ch02_data = df[(df["Tube"] == tube) & (df["Channel"] == "ch02")]
 
-            # 确保有数据
+            # Ensure availability of data
             if not ch01_data.empty and not ch02_data.empty:
-                # 排序数据
+                # Sorted data
                 ch01_data = ch01_data.sort_values("Time")
                 ch02_data = ch02_data.sort_values("Time")
 
-                # 归一化处理：将最大强度设为 1
+                # Normalization: Setting the maximum intensity to 1
                 max_ch01_intensity = ch01_data["Intensity"].max()
                 max_ch02_intensity = ch02_data["Intensity"].max()
 
                 ch01_data["Normalized Intensity"] = ch01_data["Intensity"] / max_ch01_intensity
                 ch02_data["Normalized Intensity"] = ch02_data["Intensity"] / max_ch02_intensity
 
-                # 绘制归一化强度随时间变化的曲线
+                # Plotting normalized intensity over time
                 plt.plot(ch01_data["Time"], ch01_data["Normalized Intensity"], marker="o", label=f"Tube {tube} - ch01")
                 plt.plot(ch02_data["Time"], ch02_data["Normalized Intensity"], marker="x", label=f"Tube {tube} - ch02")
 
@@ -452,31 +452,31 @@ def plot_normalized_intensity_over_time_by_ratio(df, excel_path):
         plt.legend()
         plt.grid(True)
 
-        # 将综合图像保存到内存
+        # Save composite image to memory
         img_stream = BytesIO()
         plt.savefig(img_stream, format="png")
-        img_stream.seek(0)  # 重置流的位置
+        img_stream.seek(0)  # Reset the position of the stream
         img = Image(img_stream)
 
-        # 将综合图像插入到比值 sheet 中
+        # Insert the composite image into the ratio sheet
         sheet.add_image(img, "A1")
 
-        plt.close()  # 关闭综合图形
+        plt.close()  # Close Integrated Graphics
 
-        # 为每个 tube 生成单独的图像并插入到相应的比值 sheet 中
-        current_row = 40  # 从 A20 单元格开始插入 tube 图像
+        # Generate a separate image for each tube and insert it into the corresponding ratio sheet
+        current_row = 40  # Insert tube image starting in cell A20
         for tube in tubes:
             tube_sheet_title = f"Tube {tube} - Normalized Intensity"
-            plt.figure()  # 创建新的图形
+            plt.figure()  # Creating a new graphic
             plt.title(f"Normalized Intensity Over Time for Tube {tube}")
 
-            # 获取该 tube 在 ch01 和 ch02 的数据
+            # Get the tube's data at ch01 and ch02.
             ch01_data = df[(df["Tube"] == tube) & (df["Channel"] == "ch01")]
             ch02_data = df[(df["Tube"] == tube) & (df["Channel"] == "ch02")]
 
-            # 归一化处理：将最大强度设为 1
+            # Normalization: Setting the maximum intensity to 1
             if not ch01_data.empty and not ch02_data.empty:
-                # 排序数据
+                # sort data
                 ch01_data = ch01_data.sort_values("Time")
                 ch02_data = ch02_data.sort_values("Time")
 
@@ -486,7 +486,7 @@ def plot_normalized_intensity_over_time_by_ratio(df, excel_path):
                 ch01_data["Normalized Intensity"] = ch01_data["Intensity"] / max_ch01_intensity
                 ch02_data["Normalized Intensity"] = ch02_data["Intensity"] / max_ch02_intensity
 
-                # 绘制归一化强度随时间变化的曲线
+                # Plotting normalized intensity over time
                 plt.plot(ch01_data["Time"], ch01_data["Normalized Intensity"], marker="o", label=f"ch01")
                 plt.plot(ch02_data["Time"], ch02_data["Normalized Intensity"], marker="x", label=f"ch02")
 
@@ -495,25 +495,25 @@ def plot_normalized_intensity_over_time_by_ratio(df, excel_path):
             plt.legend()
             plt.grid(True)
 
-            # 将单独的 tube 图像保存到内存
+            # Save individual tube images to memory
             img_stream_tube = BytesIO()
             plt.savefig(img_stream_tube, format="png")
-            img_stream_tube.seek(0)  # 重置流的位置
+            img_stream_tube.seek(0)  # Reset the position of the stream
             img_tube = Image(img_stream_tube)
 
-            # 将 tube 图像插入到比值 sheet 中（从 A20 开始）
+            # Insert tube image into ratio sheet (starting with A20)
             sheet.add_image(img_tube, f"A{current_row}")
-            current_row += 40  # 每个 tube 图像间隔 20 行
+            current_row += 40  # Each tube image is spaced 20 lines apart
 
-            plt.close()  # 关闭 tube 的图形
-    # 保存 Excel 文件
+            plt.close()  # Turning off the tube's graphics
+    # Save Excel file
     excel_path = os.path.join(excel_path, "fluorescent_analysis_results_intensity_normaliszed_graph.xlsx")
     excel_dir = os.path.dirname(excel_path)
 
-    # 如果目录不存在，创建目录
+    # If the directory does not exist, create the directory
     if not os.path.exists(excel_dir):
         os.makedirs(excel_dir)
-    # 保存 Excel 文件
+    # Save Excel file
     wb.save(excel_path)
     print(f"Excel file saved to {excel_path}")
 root_path = r"D:\thesis\processed 7th\R2\Raw"

@@ -1,8 +1,7 @@
-from skimage import io, color, filters, morphology, segmentation
+from skimage import io, filters, morphology, segmentation
 from skimage.feature import peak_local_max
 from skimage.measure import regionprops_table
 from scipy.ndimage import distance_transform_cdt
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy import ndimage as ndi
 

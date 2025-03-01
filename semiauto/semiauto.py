@@ -9,17 +9,16 @@ from tkinter import simpledialog
 from PIL import Image
 import numpy as np
 
-from Count.Count_the_overlay import image_path
-from Test_tubes_segmentation import rotate_portrait_to_landscape, select_two_points_crop
+from Test_tubes_segmentation import rotate_portrait_to_landscape
 
-# 增加最大图像大小限制
-Image.MAX_IMAGE_PIXELS = None  # 或者设置为一个更大的数字，如: 300000000
+# set a limit of the maximum size of the image
+Image.MAX_IMAGE_PIXELS = None
 
 def select_segment_area(input_folder, save_folder):
     save_folder = os.path.join(save_folder,"semi_segment")
     points = []
     threshold_ch01, threshold_ch02 = get_threshold_value(input_folder)
-    # 加载图片
+    # load the image
     for semi_cropped_images in os.listdir(input_folder):
         if "semi_cropped_images" not in semi_cropped_images:
             continue
@@ -38,54 +37,54 @@ def select_segment_area(input_folder, save_folder):
                 image_path = os.path.join(time_folder,image_path)
                 img = Image.open(image_path)
 
-                # 获取图片的尺寸
+                # get the size of the image
                 width, height = img.size
 
-                # 获取左八分之一区域
+                # get the left one eighth of the image
                 left_eighth = img.crop((0, 0, width // 8, height))
 
-                # 展示左八分之一区域
+                # display the left one eighth of the image
                 fig, ax = plt.subplots()
                 ax.imshow(left_eighth)
                 ax.set_title("Left One-Eighth of Image")
                 ax.axis('on')
 
-    # 鼠标点击回调函数
+    # mouse click function
     def on_click(event):
-        if len(points) < 2:  # 限制最多选择两个点
+        if len(points) < 2:  # set the limit of two points selection
             points.append((event.xdata, event.ydata))
-            ax.scatter(event.xdata, event.ydata, color='red', s=20)  # 绘制红点标记点击位置
-            plt.draw()  # 更新图像
+            ax.scatter(event.xdata, event.ydata, color='red', s=20)  # draw the red dot on the click point
+            plt.draw()  # update the image
             if len(points) == 2:
                 plt.close()
 
-    # 连接鼠标点击事件
+    # connect the click
     fig.canvas.mpl_connect('button_press_event', on_click)
 
-    plt.show()  # 显示图像并等待用户选择两点
+    plt.show()  # wait for the user to select two points
 
-    if len(points) == 2:  # 确保用户选择了两个点
+    if len(points) == 2:  # make sure the user select two points
         print(f"Selected points: {points}")
 
-        # 创建一个Tkinter窗口来显示输入框
+        # create a input box
         root = tk.Tk()
-        root.withdraw()  # 隐藏主窗口
+        root.withdraw()  # hide the main window
 
-        # 使用Tkinter输入框获取Trap Number
+        # use Tkinter to input Trap Number
         trap_number = simpledialog.askinteger("Input", "Enter Trap Number:", minvalue=1)
 
         if trap_number:
             print(f"Trap number set to: {trap_number}")
 
-            # 获取两点的坐标并裁剪
+            # get coordinates of two points and crop
             x1, y1 = points[0]
             x2, y2 = points[1]
 
-            # 计算裁剪区域
+            # calculate the crop area
             left, upper = min(x1, x2), min(y1, y2)
             right, lower = max(x1, x2), max(y1, y2)
 
-            #裁剪有用区域
+            #crop out the useful area
             for time in os.listdir(semi_cropped_images_folder):
                 time_folder = os.path.join(semi_cropped_images_folder, time)
                 for image_path in os.listdir(time_folder):
@@ -105,17 +104,17 @@ def select_segment_area(input_folder, save_folder):
 
                     image_path = os.path.join(time_folder, image_path)
                     img = Image.open(image_path)
-                    # 从左八分之一区域裁剪中间部分
+                    # crop the useful area from the left eighth
                     cropped = img.crop((left, upper, right, lower))
 
-                    # 为每次裁剪创建新的文件夹并保存裁剪后的图像
+                    # create a new folder to save the crop result
                     save_time_folder = os.path.join(save_folder, time)
                     part_folder = os.path.join(save_time_folder, f"part_1")
                     os.makedirs(part_folder, exist_ok=True)
                     save_path = os.path.join(part_folder, f"segment_area_1_{time}_{channel}.tif")
                     cropped.save(save_path)
                     print(f"Image cropped and saved at {save_path}")
-                # 支持的图片扩展名
+                # Supported image type
                 image_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.tif', '.gif'}
 
 
@@ -123,7 +122,7 @@ def select_segment_area(input_folder, save_folder):
                 for image_path in os.listdir(part_folder):
                     source_path = os.path.join(part_folder,image_path)
                     if os.path.isfile(source_path) and os.path.splitext(image_path)[1].lower() in image_extensions:
-                        # 继续后续操作，例如图像分析
+                        # continue the further step
                         if "ch00" in image_path and "t00" in image_path:
                             segment_coordinates = scan_low_intensity_on_segment(source_path, trap_number)
                             semi_segmenting(segment_coordinates, source_path, part_folder,0)
@@ -137,16 +136,16 @@ def select_segment_area(input_folder, save_folder):
                         semi_threshold_segmenting(segment_coordinates, part_folder, part_folder, 0, threshold_ch01, threshold_ch02)
 
             crop_width = x2- x1
-                # 展示从 x2 开始，向右展示相同长度的区域
+                # start from x2, the length as before
 
             display_right_part(semi_cropped_images_folder, x2, crop_width, width, height, save_folder,2, tube_count_next, threshold_ch01, threshold_ch02)
 
 def display_right_part(input_folder, x2, crop_width, width, height, save_folder, part_number, tube_count, threshold_ch01, threshold_ch02):
     """
-    展示从 x2 开始，向右裁剪相同宽度的部分
+    Show cropping the same width to the right, starting at x2
     """
     points = []
-    # 如果 x2 达到或超过图片宽度，终止递归
+    # If x2 reaches or exceeds the width of the image, terminate the recursion.
     if x2 >= width:
         print(f"Stopping recursion: x2={x2}, width={width}")
         return
@@ -163,53 +162,53 @@ def display_right_part(input_folder, x2, crop_width, width, height, save_folder,
             image_path = os.path.join(time_folder, image_path)
             img = Image.open(image_path)
 
-        # 裁剪右侧区域
+        # crop out the right side
         if x2 + crop_width < width:
             right_part = img.crop((x2 - 10, 0, x2 + int(crop_width), height))
         else:
             right_part = img.crop((x2 - 10, 0, width, height))
 
-        # 展示裁剪的右侧区域
+        # display the right side
         fig, ax = plt.subplots()
         ax.imshow(right_part)
         ax.set_title(f"Part {part_number}: x2={x2} to {x2 + int(crop_width)}")
         ax.axis('on')
 
-    # 鼠标点击回调函数，选择两个点
+    # Mouse click callback function to select two points
     def on_click(event):
-        if len(points) < 2:  # 限制最多选择两个点
+        if len(points) < 2:  # set the limit of maximum two points
             points.append((event.xdata, event.ydata))
-            ax.scatter(event.xdata, event.ydata, color='red', s=20)  # 绘制红点标记点击位置
+            ax.scatter(event.xdata, event.ydata, color='red', s=20)  # draw the red dot on the selected area
             plt.draw()
 
-            if len(points) == 2:  # 选择了两个点
-                plt.close()  # 关闭当前图像窗口
+            if len(points) == 2:  # chosen two points
+                plt.close()  # close the window
 
     fig.canvas.mpl_connect('button_press_event', on_click)
 
-    # 显示图像并等待用户点击选择两个点
+    # Displays an image and waits for the user to click to select two points
     plt.show()
 
-    if len(points) == 2:  # 确保用户选择了两个点
+    if len(points) == 2:  # Make sure the user selects two points
         print(f"Selected points: {points}")
 
-        # 使用Tkinter输入框获取Trap Number
+        # Get Trap Number using Tkinter input box
         root = tk.Tk()
-        root.withdraw()  # 隐藏主窗口
+        root.withdraw()  # Hide the main window
         trap_number = simpledialog.askinteger("Input", "Enter Trap Number:", minvalue=1)
 
         if trap_number:
             print(f"Trap number set to: {trap_number}")
 
-            # 获取两点的坐标并裁剪
+            # get the coordinates of two points and then crop
             x1, y1 = points[0]
             x2, y2 = points[1]
 
-            # 计算裁剪区域
+            # calculate the crop area
             left, upper = start_position-10 + min(x1, x2), min(y1, y2)
             right, lower = start_position-10 + max(x1, x2), max(y1, y2)
 
-            #裁剪有用区域
+            #crop out the useful area
             for time in os.listdir(input_folder):
                 time_folder = os.path.join(input_folder,time)
                 for image_path in os.listdir(time_folder):
@@ -229,10 +228,10 @@ def display_right_part(input_folder, x2, crop_width, width, height, save_folder,
 
                     image_path = os.path.join(time_folder,image_path)
                     img = Image.open(image_path)
-                    # 新计算的值
+                    # new calculation value
                     cropped = img.crop((left, upper, right, lower))
 
-                    # 为每次裁剪创建新的文件夹并保存裁剪后的图像
+                    # create a new folder for each cropping
                     save_time_folder = os.path.join(save_folder, time)
                     part_folder = os.path.join(save_time_folder, f"part_{part_number}")
                     os.makedirs(part_folder, exist_ok=True)
@@ -240,13 +239,13 @@ def display_right_part(input_folder, x2, crop_width, width, height, save_folder,
                     cropped.save(save_path)
                     print(f"Image cropped and saved at {save_path}")
 
-                # 支持的图片扩展名
+                # supported image type
                 image_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.tif', '.gif'}
 
                 for image_path in os.listdir(part_folder):
                     source_path = os.path.join(part_folder, image_path)
                     if os.path.isfile(source_path) and os.path.splitext(image_path)[1].lower() in image_extensions:
-                        # 继续后续操作，例如图像分析
+                        # continue the further step
                         if "ch00" in image_path and "t00" in image_path:
                             segment_coordinates = scan_low_intensity_on_segment(source_path, trap_number)
                             semi_segmenting(segment_coordinates, source_path, part_folder, tube_count)
@@ -256,12 +255,12 @@ def display_right_part(input_folder, x2, crop_width, width, height, save_folder,
                     if os.path.isfile(source_path) and os.path.splitext(image_path)[1].lower() in image_extensions:
                         tube_count_next = semi_segmenting(segment_coordinates, source_path, part_folder, tube_count)
                         semi_threshold_segmenting(segment_coordinates,part_folder,part_folder,tube_count,threshold_ch01, threshold_ch02)
-                # 更新 x2 为当前裁剪区域的末尾
+                # update the x2 for the end of cropping
                 new_x2 = int(x2) +start_position
                 print(f"Next part: new_x2={new_x2}, crop_width={crop_width}")
 
             if new_x2 < width-10:
-                # 继续递归
+                # Continue recursion
                 display_right_part(input_folder, new_x2, crop_width, width, height, save_folder, part_number + 1, tube_count_next, threshold_ch01, threshold_ch02)
 
 
@@ -278,24 +277,24 @@ def scan_low_intensity_on_segment(image_path, number):
     initial_y = round(height / 2)
     y = initial_y
     intensity_values = cv2.cvtColor(image[y:y + 1, :, :], cv2.COLOR_BGR2GRAY)[0]
-    # 第一次计算平均值
+    # calculate the mean value for the first time
     mean1 = np.mean(intensity_values)
 
-    # 第一次筛选：低于 mean1 的点
+    # First screening: points below mean1
     low_intensity_values1 = intensity_values[intensity_values < mean1]
 
-    # 确保第一次筛选结果不为空
+    # Ensure that the first screening result is not null
     if low_intensity_values1.size > 0:
-        # 第二次计算平均值
+        # calculate the mean value for the second time
         mean2 = np.mean(low_intensity_values1)
 
-        # 第二次筛选：低于 mean2 的点
+        # Second screening: points below mean2
         low_intensity_values2 = low_intensity_values1[low_intensity_values1 < mean2]
 
-        # 确保第二次筛选结果不为空
+        # Ensure that the second screening result is not null
         final_mean = np.mean(low_intensity_values2) if low_intensity_values2.size > 0 else mean2
     else:
-        final_mean = mean1  # 如果第一次筛选为空，直接返回 mean1
+        final_mean = mean1  # If the first filter is empty, return mean1 directly.
 
     print(final_mean + final_mean / 5)
     step_size = 1
@@ -403,10 +402,10 @@ def gather_all_semi_segment_part(input_folder):
                         for file in os.listdir(semi_segmented_folder_ch):
                             channel_parts= semi_segmented_folder.split('_')
 
-                            # 通过遍历找到 chXX 这样的字符串
+                            # Iterate through to find strings like chXX
                             channel = None
                             for part in channel_parts:
-                                if part.startswith("ch") and part[2:].isdigit():  # 确保 "ch" 后跟的是数字
+                                if part.startswith("ch") and part[2:].isdigit():  # Make sure the “ch” is followed by a number.
                                     channel = part
                                     break
                             time_folder_save = os.path.join(output_folder, time)
@@ -424,10 +423,10 @@ def gather_all_semi_segment_part(input_folder):
                         for file in os.listdir(semi_segmented_folder_ch):
                             channel_parts = semi_segmented_folder.split('_')
 
-                            # 通过遍历找到 chXX 这样的字符串
+                            # Iterate through to find strings like chXX
                             channel = None
                             for part in channel_parts:
-                                if part.startswith("ch") and part[2:].isdigit():  # 确保 "ch" 后跟的是数字
+                                if part.startswith("ch") and part[2:].isdigit():  # Make sure the “ch” is followed by a number.
                                     channel = part
                                     break
                             time_folder_save = os.path.join(output_folder, time)

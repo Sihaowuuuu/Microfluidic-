@@ -53,24 +53,24 @@ def scan_low_intensity_on_overlay(input_folder, output_folder, number):
                     initial_y = round(height / 2) + 20
                     y = initial_y
                     intensity_values = cv2.cvtColor(image[y:y + 1, :, :], cv2.COLOR_BGR2GRAY)[0]
-                    # 第一次计算平均值
+                    # First calculation of the average
                     mean1 = np.mean(intensity_values)
 
-                    # 第一次筛选：低于 mean1 的点
+                    # First screening: points below mean1
                     low_intensity_values1 = intensity_values[intensity_values < mean1]
 
-                    # 确保第一次筛选结果不为空
+                    # Ensure that the first screening result is not null
                     if low_intensity_values1.size > 0:
-                        # 第二次计算平均值
+                        # Second calculation of the average
                         mean2 = np.mean(low_intensity_values1)
 
-                        # 第二次筛选：低于 mean2 的点
+                        # Second screening: points below mean2
                         low_intensity_values2 = low_intensity_values1[low_intensity_values1 < mean2]
 
-                        # 确保第二次筛选结果不为空
+                        # Ensure that the second screening result is not null
                         final_mean = np.mean(low_intensity_values2) if low_intensity_values2.size > 0 else mean2
                     else:
-                        final_mean = mean1  # 如果第一次筛选为空，直接返回 mean1
+                        final_mean = mean1  # If the first filter is empty, return mean1 directly.
 
                     print(final_mean+final_mean/5)
                     step_size = 1
@@ -135,11 +135,11 @@ def segmenting(overlay_coordinates, input_folder, output_folder):
                 os.makedirs(output_dir, exist_ok=True)
 
                 if not os.access(output_dir, os.W_OK):
-                    print(f"错误: 无写入权限 {output_dir}")
+                    print(f"Error: no right to save{output_dir}")
                     continue
 
                 for i in range(0, len(overlay_coordinates) - 1, 2):
-                    if i + 1 >= len(overlay_coordinates):  # 检查索引越界
+                    if i + 1 >= len(overlay_coordinates):  # Checking for index out-of-bounds
                         print(f"Invalid index pair: {i}, {i + 1}")
                         continue
                     start_x = max(0, overlay_coordinates[i] - 2)
@@ -153,14 +153,14 @@ def segmenting(overlay_coordinates, input_folder, output_folder):
                     try:
                         success = cv2.imwrite(output_path, roi)
                         if not success:
-                            # 尝试保存为PNG格式
+                            # Try saving as a PNG
                             png_path = os.path.splitext(output_path)[0] + ".png"
                             cv2.imwrite(png_path, roi)
-                            print(f"警告: TIFF保存失败，已转为PNG格式: {png_path}")
+                            print(f"WARNING: TIFF failed to save, converted to PNG format: {png_path}")
                         else:
-                            print(f"保存成功: {output_path}")
+                            print(f"Save Success: {output_path}")
                     except Exception as e:
-                        print(f"异常: {str(e)}")
+                        print(f"Error: {str(e)}")
 
                 print(f"Processing complete. Processed images saved in {output_dir}")
 
