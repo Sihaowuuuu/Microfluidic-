@@ -391,10 +391,10 @@ def batch_crop(input_folder, output_folder, points):
                 image_rgb = cv2.cvtColor(landscape_image, cv2.COLOR_BGR2RGB)
 
                 # Crop and rotation parameters
-                crop_top = min(pt1[1], pt2[1])  # 上边界
-                crop_bottom = max(pt1[1], pt2[1])  # 下边界
-                crop_left = min(pt1[0], pt2[0])  # 左边界
-                crop_right = max(pt1[0], pt2[0])  # 右边界
+                crop_top = min(pt1[1], pt2[1])  # upper boundary
+                crop_bottom = max(pt1[1], pt2[1])  # lower boundary
+                crop_left = min(pt1[0], pt2[0])  # left boundary
+                crop_right = max(pt1[0], pt2[0])  # right boundary
 
                 # Convert cropped image to PIL object and rotate
                 image_pil = Image.fromarray(image_rgb)
