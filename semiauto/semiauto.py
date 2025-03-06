@@ -9,7 +9,7 @@ from tkinter import simpledialog
 from PIL import Image
 import numpy as np
 
-from Test_tubes_segmentation import rotate_portrait_to_landscape
+from Test_tubes_segmentation import rotate_portrait_to_landscape,select_two_points_crop
 
 # set a limit of the maximum size of the image
 Image.MAX_IMAGE_PIXELS = None
@@ -602,4 +602,4 @@ input_folder = r"D:\thesis\processed 7th\R3"
 output_folder = r"D:\thesis\processed 7th\R2\Scale"
 #crop_two_sides(*select_two_points_crop(input_folder,output_folder))
 #select_segment_area(input_folder, output_folder)
-gather_all_semi_segment_part(input_folder)
+#gather_all_semi_segment_part(input_folder)

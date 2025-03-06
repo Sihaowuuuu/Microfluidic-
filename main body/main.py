@@ -4,7 +4,7 @@ from Test_tubes_segmentation.pic_batch_straightening        import (auto_pic_poi
                                                                     manual_batch_straighten,
                                                                     select_two_points,
                                                                     batch_crop,
-                                                                    select_two_points_crop)
+                                                                    )
 from Small_GUI.GUI              import select_folders,show_error_popup,get_number,select_count_folder
 from Test_tubes_segmentation.intensity_scan import (segmenting,
                                                     threshold_segmenting,
