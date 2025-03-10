@@ -21,6 +21,7 @@ def rotate_portrait_to_landscape(image):
         return cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)  # Rotate 90 degrees clockwise
     return image  # Return the image unchanged if it's already landscape
 
+
 def auto_pic_point_select(input_folder, output_folder):
     # Load the template image
     template_path = r"D:\thesis\coding\Test_tubes_segmentation\sand.tif"
@@ -48,13 +49,15 @@ def auto_pic_point_select(input_folder, output_folder):
         for filename in os.listdir(time_folder):
             print(f"Processing file: {filename}")
             # Only proceed if "overlay" is in the filename and it ends with .tif or .tiff
-            if "ch00" in filename.lower() and (filename.endswith(".tif") or filename.endswith(".tiff")):
+            if "ch00" in filename.lower() and (
+                filename.endswith(".tif") or filename.endswith(".tiff")
+            ):
 
                 image_path = os.path.join(time_folder, filename)
                 image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
-                #Rotate the image to landscape
-                landscape_image=rotate_portrait_to_landscape(image)
+                # Rotate the image to landscape
+                landscape_image = rotate_portrait_to_landscape(image)
 
                 # For the overlay image, perform template matching and calculate parameters
                 res = cv2.matchTemplate(landscape_image, template, cv2.TM_CCOEFF_NORMED)
@@ -66,23 +69,29 @@ def auto_pic_point_select(input_folder, output_folder):
                     center_y = y + h // 2
                     matched_centers.append((center_x, center_y))
 
-
                 if len(matched_centers) < 2:
-                    raise RuntimeError("Not enough points for rotation in the first image.")
+                    raise RuntimeError(
+                        "Not enough points for rotation in the first image."
+                    )
 
                 # Check all matched center coordinates
-                for i,center in enumerate(matched_centers):
+                for i, center in enumerate(matched_centers):
                     should_save = True
                     for saved_center in saved_centers:
                         # Calculate the Euclidean distance
-                        distance = math.sqrt((center[0] - saved_center[0]) ** 2 + (center[1] - saved_center[1]) ** 2)
+                        distance = math.sqrt(
+                            (center[0] - saved_center[0]) ** 2
+                            + (center[1] - saved_center[1]) ** 2
+                        )
                         if distance < 100:
                             should_save = False
                             break
 
                     # If the distance is far enough, save the image and record the center coordinates
                     if should_save:
-                        saved_centers.append(center)  # Add the current center coordinates to the list of saved coordinates.
+                        saved_centers.append(
+                            center
+                        )  # Add the current center coordinates to the list of saved coordinates.
 
         # Check if saved_centers contains exact two centers
         if len(saved_centers) < 2:
@@ -91,6 +100,7 @@ def auto_pic_point_select(input_folder, output_folder):
         if len(saved_centers) > 2:
             raise RuntimeError("Too many matching centers found for rotation.")
         return input_folder, output_folder, saved_centers
+
 
 # Function for batch rotation and cropping of images
 def auto_batch_straighten_and_crop(input_folder, output_folder, points):
@@ -125,10 +135,14 @@ def auto_batch_straighten_and_crop(input_folder, output_folder, points):
             if crop_right is None:
                 crop_right = rotated_image.size[0] - 60
 
-            cropped_rotated_image = rotated_image.crop((crop_left, crop_top, crop_right, crop_bottom))
+            cropped_rotated_image = rotated_image.crop(
+                (crop_left, crop_top, crop_right, crop_bottom)
+            )
 
             # Extract a part of the filename to create subfolder (example: using first part of filename)
-            subfolder_name = subfolder_name = os.path.join("straightened image",filename.split("_")[10])  # Modify this as needed to extract a specific part
+            subfolder_name = subfolder_name = os.path.join(
+                "straightened image", filename.split("_")[10]
+            )  # Modify this as needed to extract a specific part
             subfolder_path = os.path.join(output_folder, subfolder_name)
 
             # Create subfolder if it doesn't exist
@@ -151,14 +165,14 @@ def manual_batch_straighten(input_folder, output_folder, points):
     os.makedirs(output_folder, exist_ok=True)
 
     for time in sorted(os.listdir(input_folder)):
-        time_folder = os.path.join(input_folder,time)
+        time_folder = os.path.join(input_folder, time)
         # Process all images in the folder
         for filename in os.listdir(time_folder):
             image_path = os.path.join(time_folder, filename)
             image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 
-            #Rotate the image to landscape
-            landscape_image=rotate_portrait_to_landscape(image)
+            # Rotate the image to landscape
+            landscape_image = rotate_portrait_to_landscape(image)
 
             # Convert to RGB
             image_rgb = cv2.cvtColor(landscape_image, cv2.COLOR_BGR2RGB)
@@ -166,15 +180,17 @@ def manual_batch_straighten(input_folder, output_folder, points):
             # Crop and rotation parameters
             crop_top = pt2[1] - 265
             crop_bottom = pt2[1] + 265
-            crop_left = pt1[0]-50
-            crop_right = pt2[0]+50
+            crop_left = pt1[0] - 50
+            crop_right = pt2[0] + 50
 
             # Convert cropped image to PIL object and rotate
             image_pil = Image.fromarray(image_rgb)
             rotated_image = image_pil.rotate(angle, expand=True)
 
             # Extract a part of the filename to create subfolder (example: using first character or some part)
-            subfolder_name = os.path.join("straightened image",time)  # Modify as needed to extract a specific part
+            subfolder_name = os.path.join(
+                "straightened image", time
+            )  # Modify as needed to extract a specific part
             subfolder_path = os.path.join(output_folder, subfolder_name)
 
             # Create subfolder if it doesn't exist
@@ -204,9 +220,11 @@ def select_two_points(input_folder, output_folder):
     for time_folder in sorted(os.listdir(input_folder)):
         if "t00" not in time_folder:
             continue
-        time_folder = os.path.join(input_folder,time_folder)
+        time_folder = os.path.join(input_folder, time_folder)
         for filename in os.listdir(time_folder):
-            if "ch00" in filename.lower() and filename.lower().endswith((".tif", ".tiff")):
+            if "ch00" in filename.lower() and filename.lower().endswith(
+                (".tif", ".tiff")
+            ):
                 image_path = os.path.join(time_folder, filename)
                 break
 
@@ -224,7 +242,7 @@ def select_two_points(input_folder, output_folder):
 
         # Extract 1000 pixels wide from the leftmost and rightmost parts of the image
         left_half = image[:, :1000]
-        right_half = image[:, width-1000:]
+        right_half = image[:, width - 1000 :]
 
         def select_point(img, title):
             """Displays the image and allows the user to select a point."""
@@ -241,7 +259,7 @@ def select_two_points(input_folder, output_folder):
                 if len(selected_point) == 0:
                     x, y = event.xdata, event.ydata
                     selected_point.append((round(x), round(y)))
-                    ax.plot(x, y, 'ro')  # mark selected point
+                    ax.plot(x, y, "ro")  # mark selected point
                     fig.canvas.draw()
                     plt.close()
 
@@ -260,7 +278,7 @@ def select_two_points(input_folder, output_folder):
         right_point = select_point(right_half, "Select a point on the right half")
         if right_point:
             # Add the x-coordinate of the point in the right half to the width of the left half.
-            points.append((right_point[0] + width-1000, right_point[1]))
+            points.append((right_point[0] + width - 1000, right_point[1]))
 
         # return the result
         if len(points) == 2:
@@ -268,6 +286,7 @@ def select_two_points(input_folder, output_folder):
         else:
             print("Error: Less than two points selected.")
             return None
+
 
 def select_two_points_crop(input_folder, output_folder):
     """
@@ -286,7 +305,7 @@ def select_two_points_crop(input_folder, output_folder):
         if "straightened" not in straightened_folder:
             continue
 
-        straightened_folder = os.path.join(input_folder,straightened_folder)
+        straightened_folder = os.path.join(input_folder, straightened_folder)
 
         if straightened_folder is None:
             print("Error: No valid straightened image found.")
@@ -296,9 +315,11 @@ def select_two_points_crop(input_folder, output_folder):
         for time_folder in sorted(os.listdir(straightened_folder)):
             if "t00" not in time_folder:
                 continue
-            time_folder = os.path.join(straightened_folder,time_folder)
+            time_folder = os.path.join(straightened_folder, time_folder)
             for filename in os.listdir(time_folder):
-                if "ch00" in filename.lower() and filename.lower().endswith((".tif", ".tiff")):
+                if "ch00" in filename.lower() and filename.lower().endswith(
+                    (".tif", ".tiff")
+                ):
                     image_path = os.path.join(time_folder, filename)
                     break
 
@@ -307,7 +328,9 @@ def select_two_points_crop(input_folder, output_folder):
                 return None
 
             # load the image
-            image = rotate_portrait_to_landscape(cv2.imread(image_path, cv2.IMREAD_COLOR))
+            image = rotate_portrait_to_landscape(
+                cv2.imread(image_path, cv2.IMREAD_COLOR)
+            )
             if image is None:
                 print("Error: Could not open image.")
                 return None
@@ -316,7 +339,7 @@ def select_two_points_crop(input_folder, output_folder):
 
             # Extract 1000 pixels wide from the leftmost and rightmost parts of the image
             left_half = image[:, :1000]
-            right_half = image[:, width-1000:]
+            right_half = image[:, width - 1000 :]
 
             def select_point(img, title):
                 """Displays the image and allows the user to select a point."""
@@ -333,7 +356,7 @@ def select_two_points_crop(input_folder, output_folder):
                     if len(selected_point) == 0:
                         x, y = event.xdata, event.ydata
                         selected_point.append((round(x), round(y)))
-                        ax.plot(x, y, 'ro')  # mark selected point
+                        ax.plot(x, y, "ro")  # mark selected point
                         fig.canvas.draw()
                         plt.close()
 
@@ -352,7 +375,7 @@ def select_two_points_crop(input_folder, output_folder):
             right_point = select_point(right_half, "Select a point on the right half")
             if right_point:
                 # Add the x-coordinate of the point in the right half to the width of the left half.
-                points.append((right_point[0] + width-1000, right_point[1]))
+                points.append((right_point[0] + width - 1000, right_point[1]))
 
             # return the result
             if len(points) == 2:
@@ -360,6 +383,7 @@ def select_two_points_crop(input_folder, output_folder):
             else:
                 print("Error: Less than two points selected.")
                 return None
+
 
 def batch_crop(input_folder, output_folder, points):
     # Calculate the angle
@@ -372,20 +396,18 @@ def batch_crop(input_folder, output_folder, points):
         if "straightened" not in straightened_folder:
             continue
 
-        straightened_folder = os.path.join(input_folder,straightened_folder)
-
-
+        straightened_folder = os.path.join(input_folder, straightened_folder)
 
         for time_folder in sorted(os.listdir(straightened_folder)):
             time = time_folder
-            time_folder = os.path.join(straightened_folder,time_folder)
+            time_folder = os.path.join(straightened_folder, time_folder)
             # Process all images in the folder
             for filename in os.listdir(time_folder):
                 image_path = os.path.join(time_folder, filename)
                 image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 
-                #Rotate the image to landscape
-                landscape_image=rotate_portrait_to_landscape(image)
+                # Rotate the image to landscape
+                landscape_image = rotate_portrait_to_landscape(image)
 
                 # Convert to RGB
                 image_rgb = cv2.cvtColor(landscape_image, cv2.COLOR_BGR2RGB)
@@ -398,10 +420,14 @@ def batch_crop(input_folder, output_folder, points):
 
                 # Convert cropped image to PIL object and rotate
                 image_pil = Image.fromarray(image_rgb)
-                cropped_image = image_pil.crop((crop_left, crop_top, crop_right, crop_bottom))
+                cropped_image = image_pil.crop(
+                    (crop_left, crop_top, crop_right, crop_bottom)
+                )
 
                 # Extract a part of the filename to create subfolder (example: using first character or some part)
-                subfolder_name = os.path.join("cropped image",time)  # Modify as needed to extract a specific part
+                subfolder_name = os.path.join(
+                    "cropped image", time
+                )  # Modify as needed to extract a specific part
                 subfolder_path = os.path.join(output_folder, subfolder_name)
 
                 # Create subfolder if it doesn't exist
@@ -412,6 +438,7 @@ def batch_crop(input_folder, output_folder, points):
                 cropped_image.save(output_path)
                 print(f"cropped image saved at: {output_path}")
 
+
 input_folder = r"D:\thesis\processed 7th\R1\Raw"
 output_folder = r"D:\thesis\processed 7th\R1\Raw"
-#batch_crop(*select_two_points_crop(input_folder,output_folder))
+# batch_crop(*select_two_points_crop(input_folder,output_folder))

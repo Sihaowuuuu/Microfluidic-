@@ -1,7 +1,9 @@
 import os
-from Count_the_overlay import count_overlay
-from Count import count_channel
+
 import pandas as pd
+from Count_the_overlay import count_overlay
+
+from Count import count_channel
 
 
 def process_image_structure(root_folder):
@@ -18,7 +20,7 @@ def process_image_structure(root_folder):
             continue
 
         # 按下划线分割文件夹名称，检查一下是不是拉直过的
-        channel_parts = channel_name.split('_')
+        channel_parts = channel_name.split("_")
 
         # 示例：假设文件夹名结构为 "ExperimentID_Type_Time"
         if not channel_parts[0] == "straightened":
@@ -28,9 +30,9 @@ def process_image_structure(root_folder):
 
         # 遍历通道文件夹内的文件
         for file_name in os.listdir(channel_name_path):
-            if file_name.endswith(('.png', '.jpg', '.tif')):
+            if file_name.endswith((".png", ".jpg", ".tif")):
                 # 提取试管号和通道号
-                parts = file_name.split('_')
+                parts = file_name.split("_")
                 try:
                     tube_number = parts[-1]  # 倒数第二部分表示试管号
                     channel_id = parts[-4]  # 从通道文件夹提取通道名
@@ -43,7 +45,7 @@ def process_image_structure(root_folder):
 
                 # 提取图片名称
                 image_name_parts = parts[:5]  # 假设前5部分是图片名称的一部分
-                image_name = '_'.join(image_name_parts)  # 拼接图片名称
+                image_name = "_".join(image_name_parts)  # 拼接图片名称
 
                 # 确保计数只进行在对应的通道上
                 if channel_id == "ch00" or channel_id == "ch01":
@@ -55,7 +57,10 @@ def process_image_structure(root_folder):
 
                 # 将结果存储到 channel_data 中
                 if tube_number not in channel_data:
-                    channel_data[tube_number] = {"Image Name": image_name, "Tube Number": tube_number}
+                    channel_data[tube_number] = {
+                        "Image Name": image_name,
+                        "Tube Number": tube_number,
+                    }
 
                 channel_data[tube_number][channel_id] = count
 
@@ -71,9 +76,12 @@ def process_image_structure(root_folder):
 
     return df
 
+
 # 主程序
 root_folder = r"D:\thesis\coding\data\output_folder"  # 根文件夹路径
-output_excel_path = r"D:\thesis\coding\data\output_folder\output.xlsx"  # 输出 Excel 文件路径
+output_excel_path = (
+    r"D:\thesis\coding\data\output_folder\output.xlsx"  # 输出 Excel 文件路径
+)
 
 df = process_image_structure(root_folder)
 

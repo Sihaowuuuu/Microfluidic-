@@ -1,8 +1,10 @@
-import cv2
-import numpy as np
-from Count import count_channel
 import os
 import shutil
+
+import cv2
+import numpy as np
+
+from Count import count_channel
 
 
 def analysis_intensity_over_time(root_path):
@@ -20,12 +22,14 @@ def analysis_intensity_over_time(root_path):
                 if channel_folder.startswith("Thr"):
                     print(f"Processing folder: {channel_folder}")
 
-                    channel_parts = channel_folder.split('_')
+                    channel_parts = channel_folder.split("_")
 
                     # 通过遍历找到 chXX 这样的字符串
                     channel = None
                     for part in channel_parts:
-                        if part.startswith("ch") and part[2:].isdigit():  # 确保 "ch" 后跟的是数字
+                        if (
+                            part.startswith("ch") and part[2:].isdigit()
+                        ):  # 确保 "ch" 后跟的是数字
                             channel = part
                             break
 
@@ -40,7 +44,7 @@ def analysis_intensity_over_time(root_path):
 
                         # Ensure it's a file and not a subfolder
                         if os.path.isfile(img_path):
-                            tube = img_file.split('.')[0]  # Extract tube info
+                            tube = img_file.split(".")[0]  # Extract tube info
 
                             # Initialize keys for the dictionary
                             key = (time, channel, tube)
@@ -53,12 +57,19 @@ def analysis_intensity_over_time(root_path):
                                 if channel_folder.startswith("Thr"):
                                     # Calculate fluorescence intensity (mean pixel value)
                                     data_dict[key]["Intensity"] = np.mean(img)
-                                    data_dict[key]["Cell Count"] = count_channel(img_path)
+                                    data_dict[key]["Cell Count"] = count_channel(
+                                        img_path
+                                    )
 
     # Convert dictionary to a DataFrame
     rows = [
-        {"Time": time, "Channel": channel, "Tube": tube,
-         "Intensity": values["Intensity"], "Cell Count": values["Cell Count"]}
+        {
+            "Time": time,
+            "Channel": channel,
+            "Tube": tube,
+            "Intensity": values["Intensity"],
+            "Cell Count": values["Cell Count"],
+        }
         for (time, channel, tube), values in data_dict.items()
     ]
     df = pd.DataFrame(rows)
@@ -70,8 +81,18 @@ def save_to_excel(df, root_path):
     times = sorted(df["Time"].unique())
     channels = sorted(df["Channel"].unique())
 
-    header = ["Tube"] + [f"{time}" for time in times for _ in channels for _ in ["Cell Count", "Intensity"]]
-    sub_header = [""] + [f"{ch}_{metric}" for time in times for ch in channels for metric in ["Cell Count", "Intensity"]]
+    header = ["Tube"] + [
+        f"{time}"
+        for time in times
+        for _ in channels
+        for _ in ["Cell Count", "Intensity"]
+    ]
+    sub_header = [""] + [
+        f"{ch}_{metric}"
+        for time in times
+        for ch in channels
+        for metric in ["Cell Count", "Intensity"]
+    ]
 
     excel_data = [header, sub_header]
     for tube in tubes:
@@ -79,11 +100,11 @@ def save_to_excel(df, root_path):
         for time in times:
             for channel in channels:
                 group_data = df[
-                    (df["Tube"] == tube) &
-                    (df["Time"] == time) &
-                    (df["Channel"] == channel)
+                    (df["Tube"] == tube)
+                    & (df["Time"] == time)
+                    & (df["Channel"] == channel)
                 ]
-                #print(f"Tube: {tube}, Time: {time}, Channel: {channel}, Data: {group_data}")  # Debug
+                # print(f"Tube: {tube}, Time: {time}, Channel: {channel}, Data: {group_data}")  # Debug
                 if not group_data.empty:
                     cell_count = group_data.iloc[0].get("Cell Count", 0)
                     intensity = group_data.iloc[0].get("Intensity", 0)
@@ -95,12 +116,10 @@ def save_to_excel(df, root_path):
 
     excel_df = pd.DataFrame(excel_data)
     excel_path = os.path.join(root_path, "fluorescent_analysis_results.xlsx")
-    with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
+    with pd.ExcelWriter(excel_path, engine="openpyxl") as writer:
         excel_df.to_excel(writer, index=False, header=False)
 
     print(f"Excel file saved to: {excel_path}")
-
-
 
 
 """
@@ -150,7 +169,9 @@ def organize_files_by_time_part(source_folder):
         # Identify the time part (e.g., 't00', 't01')
         time_part = None
         for part in parts:
-            if part.startswith("t") and part[1:].isdigit():  # Check if it matches the "t" + digits pattern
+            if (
+                part.startswith("t") and part[1:].isdigit()
+            ):  # Check if it matches the "t" + digits pattern
                 time_part = part
                 break
 
@@ -172,6 +193,7 @@ def organize_files_by_time_part(source_folder):
 
     print("File organization complete.")
 
+
 def group_tubes_by_specific_ratio(df):
     """
     based on the ratio of ch01 and ch02 group
@@ -187,10 +209,18 @@ def group_tubes_by_specific_ratio(df):
     # travel throughout tube list
     for tube in df["Tube"].unique():
         # get Cell Count of tube in ch01 and ch02
-        tube_data = df[(df["Time"] == "t00")&(df["Tube"] == tube) & (df["Channel"].isin(["ch01", "ch02"]))]
+        tube_data = df[
+            (df["Time"] == "t00")
+            & (df["Tube"] == tube)
+            & (df["Channel"].isin(["ch01", "ch02"]))
+        ]
         if len(tube_data) == 2:  # make sure two channels
-            count_ch01 = tube_data[tube_data["Channel"] == "ch01"]["Cell Count"].values[0]
-            count_ch02 = tube_data[tube_data["Channel"] == "ch02"]["Cell Count"].values[0]
+            count_ch01 = tube_data[tube_data["Channel"] == "ch01"]["Cell Count"].values[
+                0
+            ]
+            count_ch02 = tube_data[tube_data["Channel"] == "ch02"]["Cell Count"].values[
+                0
+            ]
 
             if count_ch02 > 0 and count_ch01 > 0:  # make sure dominator
                 # Calculate the ratio and reduce to the simplest fraction
@@ -233,8 +263,18 @@ def plot_cell_count_over_time_by_ratio(df, root_path):
                 ch02_data = ch02_data.sort_values("Time")
 
                 # Plotting cell counts over time
-                plt.plot(ch01_data["Time"], ch01_data["Cell Count"], marker="o", label=f"Tube {tube} - ch01")
-                plt.plot(ch02_data["Time"], ch02_data["Cell Count"], marker="x", label=f"Tube {tube} - ch02")
+                plt.plot(
+                    ch01_data["Time"],
+                    ch01_data["Cell Count"],
+                    marker="o",
+                    label=f"Tube {tube} - ch01",
+                )
+                plt.plot(
+                    ch02_data["Time"],
+                    ch02_data["Cell Count"],
+                    marker="x",
+                    label=f"Tube {tube} - ch02",
+                )
 
         plt.xlabel("Time")
         plt.ylabel("Cell Count")
@@ -269,8 +309,18 @@ def plot_cell_count_over_time_by_ratio(df, root_path):
                 ch01_data = ch01_data.sort_values("Time")
                 ch02_data = ch02_data.sort_values("Time")
 
-                plt.plot(ch01_data["Time"], ch01_data["Cell Count"], marker="o", label=f"ch01")
-                plt.plot(ch02_data["Time"], ch02_data["Cell Count"], marker="x", label=f"ch02")
+                plt.plot(
+                    ch01_data["Time"],
+                    ch01_data["Cell Count"],
+                    marker="o",
+                    label=f"ch01",
+                )
+                plt.plot(
+                    ch02_data["Time"],
+                    ch02_data["Cell Count"],
+                    marker="x",
+                    label=f"ch02",
+                )
 
             plt.xlabel("Time")
             plt.ylabel("Cell Count")
@@ -340,8 +390,18 @@ def plot_intensity_over_time_by_ratio(df, excel_path):
                 ch02_data = ch02_data.sort_values("Time")
 
                 # Plotting intensity over time
-                plt.plot(ch01_data["Time"], ch01_data["Intensity"], marker="o", label=f"Tube {tube} - ch01")
-                plt.plot(ch02_data["Time"], ch02_data["Intensity"], marker="x", label=f"Tube {tube} - ch02")
+                plt.plot(
+                    ch01_data["Time"],
+                    ch01_data["Intensity"],
+                    marker="o",
+                    label=f"Tube {tube} - ch01",
+                )
+                plt.plot(
+                    ch02_data["Time"],
+                    ch02_data["Intensity"],
+                    marker="x",
+                    label=f"Tube {tube} - ch02",
+                )
 
         plt.xlabel("Time")
         plt.ylabel("Intensity")
@@ -376,8 +436,12 @@ def plot_intensity_over_time_by_ratio(df, excel_path):
                 ch01_data = ch01_data.sort_values("Time")
                 ch02_data = ch02_data.sort_values("Time")
 
-                plt.plot(ch01_data["Time"], ch01_data["Intensity"], marker="o", label=f"ch01")
-                plt.plot(ch02_data["Time"], ch02_data["Intensity"], marker="x", label=f"ch02")
+                plt.plot(
+                    ch01_data["Time"], ch01_data["Intensity"], marker="o", label=f"ch01"
+                )
+                plt.plot(
+                    ch02_data["Time"], ch02_data["Intensity"], marker="x", label=f"ch02"
+                )
 
             plt.xlabel("Time")
             plt.ylabel("Intensity")
@@ -396,7 +460,9 @@ def plot_intensity_over_time_by_ratio(df, excel_path):
 
             plt.close()  # Turning off the tube's graphics
     # Save Excel file
-    excel_path = os.path.join(excel_path, "fluorescent_analysis_results_intensity_graph.xlsx")
+    excel_path = os.path.join(
+        excel_path, "fluorescent_analysis_results_intensity_graph.xlsx"
+    )
     excel_dir = os.path.dirname(excel_path)
 
     # If the directory does not exist, create the directory
@@ -440,12 +506,26 @@ def plot_normalized_intensity_over_time_by_ratio(df, excel_path):
                 max_ch01_intensity = ch01_data["Intensity"].max()
                 max_ch02_intensity = ch02_data["Intensity"].max()
 
-                ch01_data["Normalized Intensity"] = ch01_data["Intensity"] / max_ch01_intensity
-                ch02_data["Normalized Intensity"] = ch02_data["Intensity"] / max_ch02_intensity
+                ch01_data["Normalized Intensity"] = (
+                    ch01_data["Intensity"] / max_ch01_intensity
+                )
+                ch02_data["Normalized Intensity"] = (
+                    ch02_data["Intensity"] / max_ch02_intensity
+                )
 
                 # Plotting normalized intensity over time
-                plt.plot(ch01_data["Time"], ch01_data["Normalized Intensity"], marker="o", label=f"Tube {tube} - ch01")
-                plt.plot(ch02_data["Time"], ch02_data["Normalized Intensity"], marker="x", label=f"Tube {tube} - ch02")
+                plt.plot(
+                    ch01_data["Time"],
+                    ch01_data["Normalized Intensity"],
+                    marker="o",
+                    label=f"Tube {tube} - ch01",
+                )
+                plt.plot(
+                    ch02_data["Time"],
+                    ch02_data["Normalized Intensity"],
+                    marker="x",
+                    label=f"Tube {tube} - ch02",
+                )
 
         plt.xlabel("Time")
         plt.ylabel("Normalized Intensity")
@@ -483,12 +563,26 @@ def plot_normalized_intensity_over_time_by_ratio(df, excel_path):
                 max_ch01_intensity = ch01_data["Intensity"].max()
                 max_ch02_intensity = ch02_data["Intensity"].max()
 
-                ch01_data["Normalized Intensity"] = ch01_data["Intensity"] / max_ch01_intensity
-                ch02_data["Normalized Intensity"] = ch02_data["Intensity"] / max_ch02_intensity
+                ch01_data["Normalized Intensity"] = (
+                    ch01_data["Intensity"] / max_ch01_intensity
+                )
+                ch02_data["Normalized Intensity"] = (
+                    ch02_data["Intensity"] / max_ch02_intensity
+                )
 
                 # Plotting normalized intensity over time
-                plt.plot(ch01_data["Time"], ch01_data["Normalized Intensity"], marker="o", label=f"ch01")
-                plt.plot(ch02_data["Time"], ch02_data["Normalized Intensity"], marker="x", label=f"ch02")
+                plt.plot(
+                    ch01_data["Time"],
+                    ch01_data["Normalized Intensity"],
+                    marker="o",
+                    label=f"ch01",
+                )
+                plt.plot(
+                    ch02_data["Time"],
+                    ch02_data["Normalized Intensity"],
+                    marker="x",
+                    label=f"ch02",
+                )
 
             plt.xlabel("Time")
             plt.ylabel("Normalized Intensity")
@@ -507,7 +601,9 @@ def plot_normalized_intensity_over_time_by_ratio(df, excel_path):
 
             plt.close()  # Turning off the tube's graphics
     # Save Excel file
-    excel_path = os.path.join(excel_path, "fluorescent_analysis_results_intensity_normaliszed_graph.xlsx")
+    excel_path = os.path.join(
+        excel_path, "fluorescent_analysis_results_intensity_normaliszed_graph.xlsx"
+    )
     excel_dir = os.path.dirname(excel_path)
 
     # If the directory does not exist, create the directory
@@ -516,8 +612,10 @@ def plot_normalized_intensity_over_time_by_ratio(df, excel_path):
     # Save Excel file
     wb.save(excel_path)
     print(f"Excel file saved to {excel_path}")
+
+
 root_path = r"D:\thesis\processed 7th\R2\Raw"
-#organize_files_by_time_part(root_path)
-#df = analysis_intensity_over_time(root_path)
-#plot_normalized_intensity_over_time_by_ratio(df,root_path)
-#plot_cell_count_over_time_by_ratio(analysis_intensity_over_time(root_path),root_path)
+# organize_files_by_time_part(root_path)
+# df = analysis_intensity_over_time(root_path)
+# plot_normalized_intensity_over_time_by_ratio(df,root_path)
+# plot_cell_count_over_time_by_ratio(analysis_intensity_over_time(root_path),root_path)

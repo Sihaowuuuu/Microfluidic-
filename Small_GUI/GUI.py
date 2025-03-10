@@ -5,20 +5,26 @@ from tkinter import filedialog
 from tkinter import messagebox
 import shutil
 
+
 def get_user_input_output():
     # Create a main window and hide it
     root = tk.Tk()
     root.withdraw()  # Hide the main window
 
     # Popup input box to let the user enter information
-    input_folder = simpledialog.askstring("Input folder path", "Please enter the input folder path:")
-    output_folder = simpledialog.askinteger("Output folder path", "Please enter the output folder path:")
+    input_folder = simpledialog.askstring(
+        "Input folder path", "Please enter the input folder path:"
+    )
+    output_folder = simpledialog.askinteger(
+        "Output folder path", "Please enter the output folder path:"
+    )
 
     if os.path.isfile(input_folder) and os.path.isfile(output_folder):
         # Return the information entered by the user
         return input_folder, output_folder
     else:
         print("These paths don't exist.")
+
 
 def select_folders():
     """
@@ -44,13 +50,18 @@ def select_folders():
             for filename in os.listdir(output_folder):
                 file_path = os.path.join(output_folder, filename)
                 if os.path.isfile(file_path) or os.path.isdir(file_path):
-                    os.remove(file_path) if os.path.isfile(file_path) else shutil.rmtree(file_path)
+                    (
+                        os.remove(file_path)
+                        if os.path.isfile(file_path)
+                        else shutil.rmtree(file_path)
+                    )
             print("Output folder cleared.")
         else:
             print("Please select a different output folder.")
             return select_folders()
 
     return input_folder, output_folder
+
 
 def select_count_folder():
     # Popup folder selection dialog to select the output folder
@@ -60,16 +71,20 @@ def select_count_folder():
         return None, None  # Return None if no output folder is selected
     return output_folder
 
+
 def show_error_popup():
     # Initialize the tkinter main window
     root = tk.Tk()
     root.withdraw()  # Hide the main window and only show the popup
 
     # Use messagebox to display error information
-    messagebox.showerror("Run time error","The Image can not be automatically segmented")
+    messagebox.showerror(
+        "Run time error", "The Image can not be automatically segmented"
+    )
 
     # Destroy the main window
     root.destroy()
+
 
 def get_number():
     """
@@ -80,7 +95,9 @@ def get_number():
     root.withdraw()  # Hide the root window as we only need the dialog
 
     # Ask the user for a number using a simple dialog
-    user_input = simpledialog.askstring("Input", "Please enter the number of test tubes:")
+    user_input = simpledialog.askstring(
+        "Input", "Please enter the number of test tubes:"
+    )
 
     # Check if the input is valid
     try:

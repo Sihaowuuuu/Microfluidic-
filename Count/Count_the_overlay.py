@@ -1,12 +1,14 @@
+import numpy as np
+from scipy import ndimage as ndi
+from scipy.ndimage import distance_transform_cdt
 from skimage import io, filters, morphology, segmentation
 from skimage.feature import peak_local_max
 from skimage.measure import regionprops_table
-from scipy.ndimage import distance_transform_cdt
-import numpy as np
-from scipy import ndimage as ndi
 
 
-def count_overlay(image_path, red_intensity_threshold=180, green_intensity_threshold=180):
+def count_overlay(
+    image_path, red_intensity_threshold=180, green_intensity_threshold=180
+):
     """
     Count fluorescent cells with intensity thresholds for both red and green channels.
 
@@ -71,18 +73,19 @@ def count_overlay(image_path, red_intensity_threshold=180, green_intensity_thres
     combined_mask = red_mask | green_mask
 
     # Morphological manipulation to remove noise (small spots)
-    cleaned_image = morphology.remove_small_objects(combined_mask, min_size=100)  # Set the minimum size of particles
-    cleaned_image = morphology.remove_small_holes(cleaned_image, area_threshold=1)  # Fill the small holes
+    cleaned_image = morphology.remove_small_objects(
+        combined_mask, min_size=100
+    )  # Set the minimum size of particles
+    cleaned_image = morphology.remove_small_holes(
+        cleaned_image, area_threshold=1
+    )  # Fill the small holes
 
     # Calculate the distance transform
-    distance_map = distance_transform_cdt(cleaned_image, metric='taxicab')
+    distance_map = distance_transform_cdt(cleaned_image, metric="taxicab")
 
     # Find local maxima and generate markers that match the shape of the image
     local_max = peak_local_max(
-        distance_map,
-        min_distance=7,
-        footprint=np.ones((3, 3)),
-        labels=cleaned_image
+        distance_map, min_distance=7, footprint=np.ones((3, 3)), labels=cleaned_image
     )
 
     # Convert local maxima to boolean masks
@@ -97,17 +100,14 @@ def count_overlay(image_path, red_intensity_threshold=180, green_intensity_thres
 
     # Extracting particle property data
     properties = regionprops_table(
-        segmented_image, properties=('label', 'area', 'perimeter', 'centroid')
+        segmented_image, properties=("label", "area", "perimeter", "centroid")
     )
 
     # Return data and segmentation results
     return len(np.unique(segmented_image)) - 1  # Subtract 1 for background
 
+
 # Example usage
 image_path = r"D:\thesis\processed 6th new\R1\t00\Segmented_straightened_20241208_U87_NK92_6th_try_1024_TileScan 2_R 1_Merged__t00_t00_ch01_SV_1024\straightened_20241208_U87_NK92_6th_try_1024_TileScan 2_R 1_Merged__t00_t00_ch01_SV_1024_7.jpg"
-#cell_count = count_overlay(image_path, red_intensity_threshold=180, green_intensity_threshold=180)
-#print(cell_count)
-
-
-
-
+# cell_count = count_overlay(image_path, red_intensity_threshold=180, green_intensity_threshold=180)
+# print(cell_count)

@@ -1,10 +1,14 @@
+import math
+
 import cv2
 import numpy as np
-import math
 from PIL import Image
 
 # 加载原始大图和目标沙漏图像
-image = cv2.imread(r"H:\thesis\Sihao\Raw Image\2 Seed\20240213 red green trap scaled channel_P5 combined TileScan 1_Merged_Resize001_ch02_SV.tif", cv2.IMREAD_GRAYSCALE)
+image = cv2.imread(
+    r"H:\thesis\Sihao\Raw Image\2 Seed\20240213 red green trap scaled channel_P5 combined TileScan 1_Merged_Resize001_ch02_SV.tif",
+    cv2.IMREAD_GRAYSCALE,
+)
 template = cv2.imread(r"H:\thesis\sand\sand.jpg", cv2.IMREAD_GRAYSCALE)
 
 # 获取模板图像的宽高
@@ -31,7 +35,7 @@ for pt in zip(*locations[::-1]):
     matched_centers.append((center_x, center_y))
 
     # 截取匹配到的沙漏区域
-    matched_image = image[y:y + h, x:x + w]
+    matched_image = image[y : y + h, x : x + w]
     matched_images.append(matched_image)
 
 # 存储已保存的中心坐标
@@ -42,14 +46,16 @@ for i, (center, img) in enumerate(zip(matched_centers, matched_images)):
     should_save = True
     for saved_center in saved_centers:
         # 计算欧几里得距离
-        distance = math.sqrt((center[0] - saved_center[0]) ** 2 + (center[1] - saved_center[1]) ** 2)
+        distance = math.sqrt(
+            (center[0] - saved_center[0]) ** 2 + (center[1] - saved_center[1]) ** 2
+        )
         if distance < 100:
             should_save = False
             break
 
     # 如果距离足够远，保存图像并记录中心坐标
     if should_save:
-        cv2.imwrite(f'hourglass_shape_{i}.png', img)
+        cv2.imwrite(f"hourglass_shape_{i}.png", img)
         saved_centers.append(center)  # 将当前中心坐标添加到已保存坐标列表
         print(f"沙漏图像 {i + 1} 的中心坐标:", center)
 
@@ -85,11 +91,13 @@ crop_top = max(0, center_y - 230)
 crop_bottom = min(rotated_height, center_y + 300)
 
 # 计算左右裁剪的60像素
-crop_left = 60                   
-crop_right = rotated_width-60
+crop_left = 60
+crop_right = rotated_width - 60
 
 # 裁剪旋转后的图像（上下270，左右60）
-cropped_rotated_image = rotated_image.crop((crop_left, crop_top, crop_right, crop_bottom))
+cropped_rotated_image = rotated_image.crop(
+    (crop_left, crop_top, crop_right, crop_bottom)
+)
 
 # 显示结果
 cropped_rotated_image.show()
