@@ -114,8 +114,6 @@ def main():
 
     button3 = tk.Button(window, text="preprocess(semi-automation)", command=semiauto, width=30, height=2)
     button3.pack(pady=10)
-    # main window loop
-    window.mainloop()
 
     button4 = tk.Button(window, text="count(semi-automation)", command=function4, width=30, height=2)
     button4.pack(pady=10)
