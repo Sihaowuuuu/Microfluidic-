@@ -24,12 +24,12 @@ def analysis_intensity_over_time(root_path):
 
                     channel_parts = channel_folder.split("_")
 
-                    # 通过遍历找到 chXX 这样的字符串
+                    # Iterate string for chXX
                     channel = None
                     for part in channel_parts:
                         if (
                             part.startswith("ch") and part[2:].isdigit()
-                        ):  # 确保 "ch" 后跟的是数字
+                        ):  # make sure number comes after "ch"
                             channel = part
                             break
 
@@ -202,7 +202,7 @@ def group_tubes_by_specific_ratio(df):
         df (pd.DataFrame): contain Time、Channel、Tube、Cell Count's DataFrame。
 
     Returns:
-        dict: 比值作为键，每个比值对应的 Tube 列表。
+        dict: ratio as key.
     """
     ratio_groups = defaultdict(list)  # save the Tube list
 
@@ -600,6 +600,7 @@ def plot_normalized_intensity_over_time_by_ratio(df, excel_path):
             current_row += 40  # Each tube image is spaced 20 lines apart
 
             plt.close()  # Turning off the tube's graphics
+
     # Save Excel file
     excel_path = os.path.join(
         excel_path, "fluorescent_analysis_results_intensity_normaliszed_graph.xlsx"
