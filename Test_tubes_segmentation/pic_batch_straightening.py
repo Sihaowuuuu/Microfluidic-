@@ -50,7 +50,7 @@ def auto_pic_point_select(input_folder, output_folder):
             print(f"Processing file: {filename}")
             # Only proceed if "overlay" is in the filename and it ends with .tif or .tiff
             if "ch00" in filename.lower() and (
-                filename.endswith(".tif") or filename.endswith(".tiff")
+                filename.endswith(".tif") or filename.endswith(".tiff") or filename.endswith(".jpg")
             ):
 
                 image_path = os.path.join(time_folder, filename)
@@ -223,7 +223,7 @@ def select_two_points(input_folder, output_folder):
         time_folder = os.path.join(input_folder, time_folder)
         for filename in os.listdir(time_folder):
             if "ch00" in filename.lower() and filename.lower().endswith(
-                (".tif", ".tiff")
+                (".tif", ".tiff", ".jpg")
             ):
                 image_path = os.path.join(time_folder, filename)
                 break
@@ -318,7 +318,7 @@ def select_two_points_crop(input_folder, output_folder):
             time_folder = os.path.join(straightened_folder, time_folder)
             for filename in os.listdir(time_folder):
                 if "ch00" in filename.lower() and filename.lower().endswith(
-                    (".tif", ".tiff")
+                    (".tif", ".tiff", "jpg")
                 ):
                     image_path = os.path.join(time_folder, filename)
                     break

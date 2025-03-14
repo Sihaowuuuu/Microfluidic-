@@ -266,7 +266,7 @@ def threshold_segmenting(overlay_coordinates, input_folder, output_folder):
         threshold_input_folder
     ):  # root is the current folder, dirs are subfolders, files are files
         for filename in sorted(files):
-            if not filename.endswith((".tif", ".tiff")):  # Skip non-image files
+            if not filename.endswith((".tif", ".tiff", ".jpg")):  # Skip non-image files
                 continue
 
             if "ch01" in filename.lower():
